@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ANP Quiz</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <img src="anpan.png" alt="Logo ANPAN" class="logo">
+    <h1>🎮 ANPAN Quiz Game</h1>
+  </header>
+
+  <section id="user-info">
+    <input type="text" id="name-input" placeholder="Entrez votre pseudo" />
+    <button id="name-ok-btn">OK</button>
+    <input type="text" id="wallet-input" placeholder="Wallet connecté" disabled />
+    <button id="connect-btn">Connecter Wallet</button>
+  </section>
+
+  <main class="quiz-container">
+    <div id="question-area"></div>
+    <div id="answer-buttons"></div>
+    <button id="next-btn" class="hidden">Suivant</button>
+  </main>
+
+  <aside>
+    <h3>🏆 Classement</h3>
+    <ul id="scoreboard"></ul>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
