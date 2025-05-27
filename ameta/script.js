@@ -7,41 +7,48 @@ let walletAddress = "";
 const questionArea = document.getElementById("question-area");
 const answerButtons = document.getElementById("answer-buttons");
 const nextBtn = document.getElementById("next-btn");
+const scoreBox = document.getElementById("score-box");
 const nameInput = document.getElementById("name-input");
+const nameBtn = document.getElementById("name-btn");
 const walletInput = document.getElementById("wallet-input");
 const connectBtn = document.getElementById("connect-btn");
-const nameOkBtn = document.getElementById("name-ok-btn");
-const scoreboard = document.getElementById("scoreboard");
 
-nameOkBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  if (name) {
-    userName = name;
-    alert("✅ Pseudo enregistré !");
-  } else {
-    alert("❌ Entrez un pseudo !");
+nameBtn.addEventListener("click", () => {
+  userName = nameInput.value.trim();
+  if (!userName) {
+    alert("Entrez un pseudo !");
+    return;
   }
+  nameInput.disabled = true;
+  nameBtn.disabled = true;
 });
 
 connectBtn.addEventListener("click", async () => {
   try {
     if (!window.ethereum) {
-      alert("MetaMask non détecté.");
+      alert("Installez MetaMask !");
       return;
     }
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     walletAddress = accounts[0];
     walletInput.value = walletAddress;
-    alert("✅ Wallet connecté !");
+    connectBtn.disabled = true;
+
+    if (!userName) {
+      alert("Entrez un pseudo avant !");
+      return;
+    }
+
+    document.getElementById("user-info").style.display = "none";
     fetchQuestions();
   } catch (err) {
-    console.error(err);
-    alert("Erreur de connexion MetaMask");
+    console.error("Erreur connexion wallet:", err);
   }
 });
 
 async function fetchQuestions() {
-  const res = await fetch("https://opentdb.com/api.php?amount=7&category=31&difficulty=medium&type=multiple");
+  const res = await fetch("https://opentdb.com/api.php?amount=50&category=31&difficulty=medium&type=multiple");
   const data = await res.json();
   questions = data.results;
   showQuestion();
@@ -50,15 +57,14 @@ async function fetchQuestions() {
 function showQuestion() {
   resetState();
   const question = questions[currentQuestionIndex];
-  const questionText = decodeHTML(question.question);
   const answers = [...question.incorrect_answers.map(decodeHTML), decodeHTML(question.correct_answer)];
   shuffleArray(answers);
 
-  questionArea.innerHTML = `<p>${questionText}</p>`;
+  questionArea.innerHTML = `<p>${decodeHTML(question.question)}</p>`;
   answers.forEach(answer => {
     const btn = document.createElement("button");
     btn.textContent = answer;
-    btn.className = "answer-btn";
+    btn.classList.add("answer-btn");
     if (answer === decodeHTML(question.correct_answer)) btn.dataset.correct = "true";
     btn.addEventListener("click", selectAnswer);
     answerButtons.appendChild(btn);
@@ -66,13 +72,13 @@ function showQuestion() {
 }
 
 function selectAnswer(e) {
-  const selected = e.target;
-  const correct = selected.dataset.correct === "true";
+  const correct = e.target.dataset.correct === "true";
   if (correct) score++;
 
-  [...answerButtons.children].forEach(btn => {
-    btn.classList.add(btn.dataset.correct === "true" ? "correct" : "wrong");
+  Array.from(answerButtons.children).forEach(btn => {
     btn.disabled = true;
+    if (btn.dataset.correct === "true") btn.classList.add("correct");
+    else btn.classList.add("wrong");
   });
 
   nextBtn.classList.remove("hidden");
@@ -88,17 +94,13 @@ nextBtn.addEventListener("click", () => {
 });
 
 function showScore() {
-  questionArea.innerHTML = `<h2>✅ Quiz terminé !</h2><p>${userName}, score : ${score}/7</p>`;
+  questionArea.innerHTML = `<h2>Quiz terminé</h2><p>Score: ${score}/7</p>`;
   answerButtons.innerHTML = "";
   nextBtn.classList.add("hidden");
-  sendReward();
-  updateScoreboard();
-}
+  scoreBox.innerHTML = `${userName} (${walletAddress.slice(0, 6)}...) : ${score}/7`;
 
-function updateScoreboard() {
-  const li = document.createElement("li");
-  li.textContent = `${userName} - ${score}/7`;
-  scoreboard.appendChild(li);
+  const reward = score >= 5 ? 10 : 1;
+  sendToken(walletAddress, reward);
 }
 
 function resetState() {
@@ -119,22 +121,22 @@ function shuffleArray(array) {
   }
 }
 
-async function sendReward() {
-  const amount = score >= 5 ? "10" : "1";
+async function sendToken(address, amount) {
   try {
-    const res = await fetch("https://anpanapi.vercel.app/api/send-reward", {
+    const res = await fetch("https://ton-sous-domaine.vercel.app/api/send-reward", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address: walletAddress, amount })
+      body: JSON.stringify({ address, amount })
     });
+
     const data = await res.json();
     if (data.success) {
-      questionArea.innerHTML += `<p>🎉 ${amount} ANPAN envoyés à votre wallet !</p>`;
+      questionArea.innerHTML += `<p>🎉 ${amount} ANPAN tokens envoyés !</p>`;
     } else {
-      questionArea.innerHTML += `<p>❌ Erreur récompense : ${data.error}</p>`;
+      questionArea.innerHTML += `<p>Erreur: ${data.error}</p>`;
     }
-  } catch (err) {
-    console.error(err);
-    questionArea.innerHTML += `<p>❌ Erreur réseau lors de l'envoi de la récompense.</p>`;
+  } catch (error) {
+    console.error("Erreur API:", error);
+    questionArea.innerHTML += `<p>Erreur lors de l'envoi des tokens.</p>`;
   }
 }

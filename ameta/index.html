@@ -5,30 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ANP Quiz</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="anpan.png" />
 </head>
 <body>
   <header>
-    <img src="anpan.png" alt="Logo ANPAN" class="logo">
-    <h1>🎮 ANPAN Quiz Game</h1>
+    <img src="anpan.png" alt="ANPAN Logo" id="logo" />
+    <h1>ANPAN Quiz Game</h1>
   </header>
 
-  <section id="user-info">
-    <input type="text" id="name-input" placeholder="Entrez votre pseudo" />
-    <button id="name-ok-btn">OK</button>
-    <input type="text" id="wallet-input" placeholder="Wallet connecté" disabled />
-    <button id="connect-btn">Connecter Wallet</button>
-  </section>
+  <main class="layout">
+    <!-- Classement -->
+    <aside class="left">
+      <h2>Classement</h2>
+      <div id="score-box"></div>
+    </aside>
 
-  <main class="quiz-container">
-    <div id="question-area"></div>
-    <div id="answer-buttons"></div>
-    <button id="next-btn" class="hidden">Suivant</button>
+    <!-- Zone de quiz -->
+    <section class="center">
+      <div id="user-info">
+        <input type="text" id="name-input" placeholder="Entrez votre pseudo" />
+        <button id="name-btn">OK</button>
+        <input type="text" id="wallet-input" placeholder="Wallet" readonly />
+        <button id="connect-btn">Connect Wallet</button>
+      </div>
+
+      <div id="quiz-box">
+        <div id="question-area"></div>
+        <div id="answer-buttons"></div>
+        <button id="next-btn" class="hidden">Suivant</button>
+      </div>
+    </section>
+
+    <!-- Zone d’info -->
+    <aside class="right">
+      <h2>Infos</h2>
+      <p>Répondez à 7 questions pour gagner des tokens ANPAN !</p>
+    </aside>
   </main>
-
-  <aside>
-    <h3>🏆 Classement</h3>
-    <ul id="scoreboard"></ul>
-  </aside>
 
   <script src="script.js"></script>
 </body>
